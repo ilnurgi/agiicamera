@@ -1,48 +1,70 @@
+"""
+AGiiCamera
+"""
+
+__author__ = 'ilnurgi'
+
+import traceback
+
+from typing import List
+
+from android.permissions import Permission, request_permissions
+
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.textinput import TextInput
+
+from screens.screen_manager import AppScreenManager
 
 
-class MyPaintApp(App):
+class AGiiCameraApp(App):
+    """
+    приложение
+    """
+
+    def __init__(self):
+        """
+        инициализация
+        """
+        super().__init__()
+
+        self.screen_manager = AppScreenManager()
+        self.camera = None
+        self.permissions = {}
+
     def build(self):
-        v_box_layout = BoxLayout(
-            orientation='vertical',
-        )
+        """
+        билд приложения
+        """
 
-        text = TextInput()
-        v_box_layout.add_widget(text)
-
-        button = Button(
-            text='Кнопка',
-        )
-        v_box_layout.add_widget(button)
+        self.screen_manager.log_msg('app build')
 
         try:
-            from kivy.uix.camera import Camera
-        except Exception as err:
-            import traceback
-            text.text = (
-                f'{err}'
-                f'{traceback.format_exc()}'
+            request_permissions(
+                [
+                    Permission.CAMERA,
+                    # Permission.READ_EXTERNAL_STORAGE,
+                    # Permission.WRITE_EXTERNAL_STORAGE
+                ],
+                self.permission_callback,
             )
-
-        else:
-            text.text = 'import done'
-
-        try:
-            cam = Camera()
         except Exception as err:
-            import traceback
-            text.text = (
-                f'{err}'
-                f'{traceback.format_exc()}'
-            )
+            self.screen_manager.log_msg('permission error')
+            self.screen_manager.log_msg(str(err))
+            self.screen_manager.log_msg(traceback.format_exc())
         else:
-            text.text = 'Camera() done'
+            self.screen_manager.log_msg('permission granted')
 
-        return v_box_layout
+        return self.screen_manager
+
+    def permission_callback(self, permissions: List[str], permissions_result: List[bool]):
+        """
+        колбек для запроса по правам
+        """
+        self.screen_manager.log_msg(
+            f'{permissions}, {permissions_result}'
+        )
+        for permission, permission_grant in zip(permissions, permissions_result):
+            self.permissions[permission] = permission_grant
 
 
 if __name__ == '__main__':
-    MyPaintApp().run()
+    AGiiCameraApp().run()
