@@ -4,6 +4,7 @@
 
 __author__ = 'ilnurgi'
 
+from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, NoTransition
 
 from screens.log_screen import LogScreen
@@ -25,6 +26,7 @@ class AppScreenManager(ScreenManager):
 
         self.main_screen = MainScreen()
         self.log_screen = LogScreen()
+        self.app = App.get_running_app()
 
         screens = (
             self.main_screen,
@@ -36,9 +38,17 @@ class AppScreenManager(ScreenManager):
 
         self.current = self.main_screen.name
 
-    def log_msg(self, msg: str):
+    def log_msg(self, msg: str, log_to_file: bool = True):
         """
         записывает логи в виджет
         :param msg: текст сообщения
+        :param log_to_file: логировать в файл
         """
-        self.log_screen.log_msg(msg)
+        self.log_screen.log_msg(msg, log_to_file)
+
+    def log_to_file(self, text: str):
+        """
+        записывает логи в файл
+        :param text: текст сообщения
+        """
+        self.log_screen.log_to_file(text)

@@ -8,7 +8,7 @@ import traceback
 
 from android.permissions import Permission
 
-from kivy.app import App
+from kivy.core.camera import Camera
 from kivy.uix.button import Button
 
 from screens.base_screen import BaseScreen
@@ -51,25 +51,37 @@ class MainScreen(BaseScreen):
         создание камеры
         :param button: кнопка, создавшая камеру
         """
-        app = App.get_running_app()
+        app = self.manager.app
+        manager = self.manager
 
         if not app.permissions.get(Permission.CAMERA):
-            self.manager.log_msg('не предоставлены права на камеру')
+            manager.log_msg('не предоставлены права на камеру')
+            return
+
+        if self.camera is not None:
             return
 
         try:
-            from kivy.uix.camera import Camera
+            self.camera = Camera()
         except Exception as err:
-            self.manager.log_msg('error import camera')
-            self.manager.log_msg(str(err))
-            self.manager.log_msg(traceback.format_exc())
-        else:
-            self.manager.log_msg('camera imported')
+            manager.log_msg('error create camera')
+            manager.log_msg(str(err))
+            manager.log_msg(traceback.format_exc())
+            return
+
+        manager.log_msg('camera created')
+        manager.log_msg(str(dir(self.camera)))
+
+        for f in dir(self.camera):
+            if f.startswith('_'):
+                continue
+
             try:
-                self.camera = Camera()
+                a = getattr(self.camera, f)
+                manager.log_to_file(f)
+                manager.log_to_file(str(a))
+                manager.log_to_file(a.__doc__)
             except Exception as err:
-                self.manager.log_msg('error create camera')
-                self.manager.log_msg(str(err))
-                self.manager.log_msg(traceback.format_exc())
-            else:
-                self.manager.log_msg('camera created')
+                manager.log_msg(f)
+                manager.log_msg(str(err))
+                manager.log_msg(traceback.format_exc())
