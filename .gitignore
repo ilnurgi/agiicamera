@@ -1,3 +1,5 @@
 .buildozer
 .idea
 bin
+venv
+*.log
